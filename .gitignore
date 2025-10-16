@@ -1,0 +1,97 @@
+#================================================================
+# General / Miscellaneous
+#================================================================
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+*.db
+*.sqlite3
+
+#================================================================
+# IDE / Editor Files
+#================================================================
+# IntelliJ / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code
+.vscode/
+
+#================================================================
+# Flutter Frontend (in /frontend)
+#================================================================
+# Pub-related
+frontend/.dart_tool/
+frontend/.packages
+frontend/.pub/
+frontend/.pub-cache/
+
+# Build results
+frontend/build/
+frontend/coverage/
+
+# Flutter generated files
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+
+# Symbolication and Obfuscation
+frontend/app.*.symbols
+frontend/app.*.map.json
+
+# Platform-specific build artifacts and secrets
+
+# Android (inside frontend)
+frontend/android/local.properties
+frontend/android/key.properties
+frontend/android/.gradle/
+frontend/android/app/build/
+
+# iOS (inside frontend)
+frontend/ios/build/
+frontend/ios/Pods/
+frontend/ios/Podfile.lock
+frontend/ios/Runner.xcworkspace/
+frontend/ios/.symlinks/
+frontend/ios/Flutter/App.framework
+frontend/ios/Flutter/engine.framework
+frontend/ios/Flutter/.last_build_id
+
+# macOS (inside frontend)
+frontend/macos/build/
+frontend/macos/Podfile.lock
+frontend/macos/.symlinks/
+frontend/macos/Flutter/ephemeral/
+frontend/macos/Runner.xcworkspace/
+
+# Windows (inside frontend)
+frontend/windows/build/
+frontend/windows/flutter/ephemeral/
+frontend/windows/.plugin_symlinks/
+
+# Linux (inside frontend)
+frontend/linux/build/
+frontend/linux/flutter/ephemeral/
+frontend/linux/.plugin_symlinks/
+
+#================================================================
+# Django Backend (in /backend)
+#================================================================
+# Virtual environment
+backend/venv/
+
+# Django generated
+backend/__pycache__/
+backend/*.log
+backend/db.sqlite3
+
+# Secrets
+backend/.env

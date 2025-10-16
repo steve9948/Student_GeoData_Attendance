@@ -1,0 +1,5 @@
+-r base.txt
+pytest~=7.4.0
+pytest-django~=4.5.2
+ipython~=8.16.1
+django-debug-toolbar~=4.2.0 # Handy for local debugging

@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgis/postgis:15-3.3 # Use a PostGIS image
+    container_name: gfams_db
+    env_file:
+      - ./.env
+    environment:
+      POSTGRES_DB: ${DATABASE_URL:-gfams_db}
+      POSTGRES_USER: ${DATABASE_USER:-gfams_user}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-gfams_password}
+    volumes:
+      - gfams_db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432" # Expose for local testing/management
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: gfams_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - gfams_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gfams_backend
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             python manage.py migrate --noinput &&
+             gunicorn gfams_project.wsgi:application --bind 0.0.0.0:8000"
+    env_file:
+      - ./.env
+    environment:
+      # Override settings module for local development
+      DJANGO_SETTINGS_MODULE: gfams_project.settings.local
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gfams_celery_worker
+    command: celery -A gfams_project worker -l info
+    env_file:
+      - ./.env
+    environment:
+      DJANGO_SETTINGS_MODULE: gfams_project.settings.local
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  gfams_db_data:
+  gfams_redis_data:
+  static_volume:
+  media_volume:
