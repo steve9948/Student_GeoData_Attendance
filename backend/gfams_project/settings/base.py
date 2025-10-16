@@ -2,16 +2,26 @@ import environ
 import os
 from pathlib import Path
 
-env = environ.Env(
-    # set casting, default value
-    DEBUG=(bool, False)
-)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+env = environ.Env()
+env_file = os.path.join(BASE_DIR, '.env')
+if os.path.exists(env_file):
+    env.read_env(env_file)
+
+# env = environ.Env(
+#     # set casting, default value
+#     DEBUG=(bool, False)
+# )
 
 # Set the project base directory
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+env = environ.Env()
+env_file = BASE_DIR / '.env'
+if env_file.exists():
+    env.read_env(env_file)
 
 # Take environment variables from .env file
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+# environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -86,10 +96,7 @@ ASGI_APPLICATION = 'gfams_project.asgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 # This configuration reads the DATABASE_URL environment variable.
 DATABASES = {
-    'default': env.db(
-        'DATABASE_URL', 
-        default='postgres://user:password@localhost:5432/gfams_db'
-    )
+    'default': env.db()
 }
 # Important: Override the engine to use PostGIS
 DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
