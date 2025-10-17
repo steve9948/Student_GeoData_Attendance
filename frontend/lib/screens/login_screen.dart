@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:university_student_geodata/core/app_export.dart';
 import 'package:university_student_geodata/core/extensions.dart';
+import 'package:university_student_geodata/services/api_service.dart'; // Import ApiService
 import 'login/widgets/login_form_widget.dart';
 import 'login/widgets/register_link_widget.dart';
 import 'login/widgets/sso_login_widget.dart';
@@ -19,21 +19,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   late TabController _tabController;
   bool _isLoading = false;
   String? _errorMessage;
-  final _secureStorage = const FlutterSecureStorage();
-
-  // Mock credentials for testing
-  final List<Map<String, String>> _mockCredentials = [
-    {"email": "student@kca.ac.ke", "password": "student123", "type": "student"},
-    {"email": "CS1234", "password": "password123", "type": "student"},
-    {"email": "faculty@kca.ac.ke", "password": "faculty123", "type": "faculty"},
-    {"email": "admin@kca.ac.ke", "password": "admin123", "type": "admin"}
-  ];
+  final ApiService _apiService = ApiService(); // Instantiate ApiService
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    // Set status bar style
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -49,78 +40,54 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     super.dispose();
   }
 
-  Future<void> _handleLogin(String email, String password, String role) async {
+  Future<void> _handleLogin(String username, String password) async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    // Dismiss keyboard
     FocusScope.of(context).unfocus();
 
-    try {
-      // Simulate network delay
-      await Future.delayed(const Duration(seconds: 2));
+    // Get the role based on the selected tab
+    final String role = ['student', 'faculty', 'admin'][_tabController.index];
 
-      // Check mock credentials
-      final credential = _mockCredentials.firstWhere(
-        (cred) =>
-            (cred["email"]?.toLowerCase() == email.toLowerCase()) &&
-            (cred["password"] == password) && (cred["type"] == role),
-        orElse: () => <String, String>{},
-      );
+    // Call the real API service
+    final result = await _apiService.login(username, password);
 
-      if (credential.isNotEmpty) {
-        // *** MOCK TOKEN STORAGE ***
-        // In a real app, you would get this token from your backend.
-        const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlN0dWRlbnQgVXNlciIsImlhdCI6MTUxNjIzOTAyMn0.dummy_token_for_testing';
-        await _secureStorage.write(key: 'auth_token', value: mockToken);
-        // **************************
+    if (result['success']) {
+      HapticFeedback.lightImpact();
 
-        // Success - provide haptic feedback
-        HapticFeedback.lightImpact();
-
-        // Navigate to dashboard
-        if (mounted) {
-          switch (credential['type']) {
-            case 'student':
-              Navigator.pushNamed(context, '/dashboard-screen');
-              break;
-            case 'faculty':
-              Navigator.pushNamed(context, '/lecturer-dashboard');
-              break;
-            case 'admin':
-              Navigator.pushNamed(context, '/admin-dashboard');
-              break;
-            default:
-              Navigator.pushNamed(context, '/dashboard-screen');
-          }
+      if (mounted) {
+        // IMPORTANT: For real role-based navigation,
+        // the API should return the user's role.
+        // We are using the tab index for now.
+        switch (role) {
+          case 'student':
+            Navigator.pushReplacementNamed(context, '/dashboard-screen');
+            break;
+          case 'faculty':
+            Navigator.pushReplacementNamed(context, '/lecturer-dashboard');
+            break;
+          case 'admin':
+            Navigator.pushReplacementNamed(context, '/admin-dashboard');
+            break;
         }
-      } else {
-        // Invalid credentials
-        setState(() {
-          _errorMessage =
-              'Invalid email/student ID or password. Please check your credentials and try again.';
-        });
-        HapticFeedback.mediumImpact();
       }
-    } catch (e) {
+    } else {
       setState(() {
-        _errorMessage =
-            'Network error. Please check your connection and try again.';
+        _errorMessage = result['error'] ?? 'An unknown error occurred.';
       });
       HapticFeedback.mediumImpact();
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   void _handleSsoLogin() {
-    // Simulate SSO login
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('SSO login feature coming soon'),
@@ -131,7 +98,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   void _handleRegisterTap() {
-    // Navigate to registration or show info
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text(
@@ -162,13 +128,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               child: Column(
                 children: [
                   SizedBox(height: 6.h),
-
-                  // University Logo Section
                   const UniversityLogoWidget(),
-
                   SizedBox(height: 4.h),
-
-                  // Error Message
                   if (_errorMessage != null) ...[
                     Container(
                       width: double.infinity,
@@ -213,10 +174,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       ),
                     ),
                   ],
-
                   TabBar(
                     controller: _tabController,
-                    isScrollable: true, // Make the tabs horizontally scrollable
+                    isScrollable: true,
                     tabs: const [
                       Tab(text: 'Student'),
                       Tab(text: 'Lecturer'),
@@ -224,43 +184,37 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     ],
                   ),
                   SizedBox(
-                    height: 280, // Giving the TabBarView a fixed height
+                    height: 280,
                     child: TabBarView(
                       controller: _tabController,
                       children: [
                         LoginFormWidget(
-                          onLogin: (email, password) => _handleLogin(email, password, 'student'),
+                          onLogin: _handleLogin,
                           isLoading: _isLoading,
                           userTypeLabel: 'Student',
                         ),
                         LoginFormWidget(
-                          onLogin: (email, password) => _handleLogin(email, password, 'faculty'),
+                          onLogin: _handleLogin,
                           isLoading: _isLoading,
                           userTypeLabel: 'Lecturer',
                         ),
                         LoginFormWidget(
-                          onLogin: (email, password) => _handleLogin(email, password, 'admin'),
+                          onLogin: _handleLogin,
                           isLoading: _isLoading,
                           userTypeLabel: 'Admin/Staff',
                         ),
                       ],
                     ),
                   ),
-
                   SizedBox(height: 2.h),
-
-                  // SSO Login Section
                   SsoLoginWidget(
                     onSsoLogin: _handleSsoLogin,
                     isLoading: _isLoading,
                   ),
-
                   const SizedBox(height: 24.0),
-                  // Register Link
                   RegisterLinkWidget(
                     onRegisterTap: _handleRegisterTap,
                   ),
-
                   SizedBox(height: 4.h),
                 ],
               ),
