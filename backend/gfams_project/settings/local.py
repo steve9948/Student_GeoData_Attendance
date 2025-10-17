@@ -1,15 +1,9 @@
 # gfams_project/settings/local.py
 from .base import * # Import all settings from base.py
 
-# In local.py, we typically want DEBUG to be True and specific ALLOWED_HOSTS
-# These settings will override what's in base.py if defined in .env or hardcoded here.
-
-# DEBUG = env('DEBUG', default=True) # Already handled in base.py to read from .env
-#                                    # and default to False if not found.
-#                                    # If DEBUG=True is in your .env, it will be True.
-
-# ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['127.0.0.1', 'localhost'])
-# This is also already configured in base.py to read from .env.
+# For development, allow all hosts so you can connect from your mobile device.
+# In production, this should be a specific list of your domain names.
+ALLOWED_HOSTS = ['*']
 
 # The DATABASES configuration from base.py (using env.db() and setting PostGIS ENGINE)
 # is sufficient for local development. You do not need to redefine it here unless

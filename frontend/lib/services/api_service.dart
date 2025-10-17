@@ -5,8 +5,11 @@ import 'package:geolocator/geolocator.dart';
 class ApiService {
   final Dio _dio = Dio();
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
-  // Updated base URL to point to the versioned API
-  final String _baseUrl = 'http://10.0.2.2:8000/api/v1';
+  
+  // IMPORTANT: Replace with your actual WSL IP address
+  // Use 'http://10.0.2.2:8000/api/v1' for Android Emulator
+  // Use your computer's network IP for a physical device
+  final String _baseUrl = 'http://172.25.83.140 :8000/api/v1';
 
   /// Authenticates the user and securely stores the JWT tokens.
   Future<Map<String, dynamic>> login(String username, String password) async {
