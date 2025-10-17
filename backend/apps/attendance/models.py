@@ -2,8 +2,8 @@ from django.db import models
 
 # Create your models here.
 from django.contrib.gis.db import models # Use gis.db for PointField
-from apps.users.models import User, UserRole
-from apps.lectures.models import Lecture
+from users.models import User, UserRole
+from lectures.models import Lecture
 from django.utils.translation import gettext_lazy as _
 
 class Attendance(models.Model):

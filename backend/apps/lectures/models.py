@@ -1,7 +1,7 @@
 from django.db import models
 
 # Create your models here.
-from apps.users.models import User, UserRole # Import our custom User model
+from users.models import User, UserRole # Import our custom User model
 from django.utils.translation import gettext_lazy as _
 
 class Lecture(models.Model):
