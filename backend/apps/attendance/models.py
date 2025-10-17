@@ -1,39 +1,49 @@
-from django.db import models
-
-# Create your models here.
-from django.contrib.gis.db import models # Use gis.db for PointField
-from users.models import User, UserRole
-from lectures.models import Lecture
+from django.contrib.gis.db import models
+from django.conf import settings # Use settings for user model reference
 from django.utils.translation import gettext_lazy as _
 
 class Attendance(models.Model):
+    """
+    Model to store attendance records for students in a specific lecture.
+    Includes geospatial data for location verification.
+    """
+
+    # Use a string reference 'users.User' to prevent circular import issues
     student = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
         related_name='attendance_records',
-        db_index=True, # Index for fast lookups by student
-        limit_choices_to={'role': UserRole.STUDENT} # Only students can have attendance records
+        db_index=True
     )
+    
+    # Use a string reference 'lectures.Lecture'
     lecture = models.ForeignKey(
-        Lecture,
-        on_delete=models.CASCADE,
-        related_name='attendance_records',
-        db_index=True # Index for fast lookups by lecture
+        'lectures.Lecture',
+        on_delete=models.CASCADE, 
+        related_name='attendance',
+        db_index=True
     )
-    # PointField for the student's location when attendance was marked.
-    # PostGIS automatically creates a GiST index on geometry fields.
-    location_at_marking = models.fields.PointField(srid=4326) # SRID 4326 for WGS84
+    
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    
+    # The exact location where attendance was marked.
+    # SRID 4326 is the standard for GPS coordinates (WGS 84).
+    location_at_marking = models.PointField(srid=4326)
+    
+    class MarkedByChoices(models.TextChoices):
+        AUTO = 'auto', _('Automatic')
+        MANUAL = 'manual', _('Manual')
 
-    timestamp = models.DateTimeField(
-        auto_now_add=True,
-        db_index=True # Index for fast time-based queries
+    marked_by = models.CharField(
+        max_length=10,
+        choices=MarkedByChoices.choices,
+        default=MarkedByChoices.AUTO
     )
-
-    class Meta:
-        unique_together = ('student', 'lecture') # Prevent a student from marking attendance multiple times for the same lecture
-        ordering = ['-timestamp']
-        verbose_name = _('Attendance')
-        verbose_name_plural = _('Attendance Records')
 
     def __str__(self):
-        return f"{self.student.full_name} - {self.lecture.title} ({self.timestamp.strftime('%Y-%m-%d %H:%M')})"
+        return f"{self.student.username} - {self.lecture.unit_code} at {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+
+    class Meta:
+        ordering = ['-timestamp']
+        # Prevents a student from being marked present multiple times for the same lecture.
+        unique_together = ('student', 'lecture')
