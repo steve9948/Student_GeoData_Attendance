@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -9,6 +9,7 @@ urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    # Add other app-specific URLs here later
-    # e.g., path('attendance/', include('apps.attendance.urls')),
+    # App-specific URLs
+    path('attendance/', include('apps.attendance.urls')),
+    # path('lectures/', include('apps.lectures.urls')), # Add this when ready
 ]
