@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class AttendanceConfig(AppConfig):
+class AttendanceConfig(AppCofig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'attendance'
+    name = 'apps.attendance' # Match the path in INSTALLED_APPS
