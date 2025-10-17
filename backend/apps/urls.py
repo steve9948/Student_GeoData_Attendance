@@ -11,5 +11,5 @@ urlpatterns = [
 
     # App-specific URLs
     path('attendance/', include('apps.attendance.urls')),
-    # path('lectures/', include('apps.lectures.urls')), # Add this when ready
+    path('lectures/', include('apps.lectures.urls')),
 ]
