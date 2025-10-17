@@ -1,27 +1,17 @@
-# gfams_project/settings/base.py
+import environ
 import os
 from pathlib import Path
-import sys
-import environ # Make sure environ is imported
 
-# Initialize django-environ
 env = environ.Env(
     # set casting, default value
-    DEBUG=(bool, False) # Define default for DEBUG, will be overridden by .env
+    DEBUG=(bool, False)
 )
 
 # Set the project base directory
-# Use Path for modern Python path handling
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Read .env file
-env_file = BASE_DIR / '.env'
-if env_file.exists():
-    env.read_env(str(env_file)) # environ.Env.read_env expects a string path
-
-# Add the 'apps' directory to the Python path
-sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
-
+# Take environment variables from .env file
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -32,8 +22,8 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['127.0.0.1', 'localhost']) # Use env.list for multiple hosts
-print(f'ALLOWED_HOSTS: {ALLOWED_HOSTS}')
+ALLOWED_HOSTS = [] # Will be configured in local/production
+
 
 # Application definition
 
@@ -51,14 +41,12 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'drf_spectacular',
     'django_filters', # For API filtering
-    'leaflet', # Make sure leaflet is here from previous steps
 
     # My apps
-    'users',
-    'campuses',
-    'lectures',
-    'attendance',
-    'core',
+    'apps.users',
+    'apps.campuses',
+    'apps.lectures',
+    'apps.attendance',
 ]
 
 MIDDLEWARE = [
@@ -94,12 +82,17 @@ ASGI_APPLICATION = 'gfams_project.asgi.application'
 
 
 # Database
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 # This configuration reads the DATABASE_URL environment variable.
 DATABASES = {
-    'default': env.db()
+    'default': env.db(
+        'DATABASE_URL', 
+        default='postgres://user:password@localhost:5432/gfams_db'
+    )
 }
-# IMPORTANT: Override the engine to use PostGIS AFTER env.db() has parsed it
+# Important: Override the engine to use PostGIS
 DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
+
 
 
 # Password validation
