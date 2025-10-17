@@ -33,7 +33,7 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['127.0.0.1', 'localhost']) # Use env.list for multiple hosts
-
+print(f'ALLOWED_HOSTS: {ALLOWED_HOSTS}')
 
 # Application definition
 
