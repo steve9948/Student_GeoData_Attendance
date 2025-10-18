@@ -6,8 +6,11 @@ class ApiService {
   final Dio _dio = Dio();
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   
-  // Reverted to the special IP for the Android Emulator
-  final String _baseUrl = 'http://10.0.2.2:8000/api/v1';
+  // --- Network Configuration ---
+  // Use 'http://10.0.2.2:8000/api/v1' for the Android Emulator.
+  // Use 'http://localhost:8000/api/v1' for a Windows desktop app or web.
+  // Use your computer's network IP for a physical mobile device.
+  final String _baseUrl = 'http://localhost:8000/api/v1'; // Using localhost for Windows app
 
   /// Authenticates the user and securely stores the JWT tokens.
   Future<Map<String, dynamic>> login(String username, String password) async {
