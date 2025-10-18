@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'drf_spectacular',
     'django_filters', # For API filtering
+    'corsheaders',    # For Cross-Origin Resource Sharing
 
     # My apps
     'apps.users',
@@ -52,12 +53,18 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # CORS middleware
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# CORS settings (for development)
+# In production, you should restrict this to your actual frontend domain.
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 ROOT_URLCONF = 'gfams_project.urls'
 
@@ -207,7 +214,7 @@ SPECTACULAR_SETTINGS = {
 
 # Celery settings (will be further configured)
 CELERY_BROKER_URL = env('REDIS_URL', default='redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = env('REDIS_URL', default='redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = env('REDIS_URL', default='redis://localhost:6379/0) 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
